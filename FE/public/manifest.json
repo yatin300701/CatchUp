@@ -1,0 +1,16 @@
+{
+    "name":"My Pwa",
+    "short_name":"PWA",
+    "description":"",
+    "start_url":"/",
+    "display":"standalone",
+    "background_color":"red",
+    "theme_color":"#qqq",
+    "icons":[
+        {
+            "src":"vite.svg",
+            "sizes":"192*192",
+            "type":"images/svg"
+        }
+    ]
+}
