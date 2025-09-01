@@ -16,6 +16,7 @@ function ListTasks() {
   const handleDelete = (task: Task) => {
     db.tasks.delete(task.id);
   };
+
   return (
     <div className="mt-8 mx-1 mb-4">
       <h1 className="text-2xl font-bold">List</h1>
@@ -31,7 +32,9 @@ function ListTasks() {
                 </CardAction>
               </CardHeader>
               <CardContent>
-                <CardDescription>{item.description}</CardDescription>
+                <CardDescription className="whitespace-break-spaces">
+                  {item.description}
+                </CardDescription>
                 <CardAction className="text-right text-xs">
                   Due Date: {item.dueDate}
                 </CardAction>
