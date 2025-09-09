@@ -5,8 +5,16 @@ import { Separator } from "@/components/ui/separator";
 import { Label } from "@radix-ui/react-label";
 import { SidebarTrigger } from "../components/ui/sidebar";
 import ListTasks from "@/components/parts/listTasks";
+import { FileUploader } from "react-drag-drop-files";
+import { useState } from "react";
+
+const fileTypes = ["JPG", "PNG", "GIF"];
 
 function Home() {
+  const [file, setFile] = useState(null);
+  const handleChange = (file: any) => {
+    setFile(file);
+  };
   return (
     <>
       <main className="w-full">
@@ -14,8 +22,15 @@ function Home() {
           <SidebarTrigger />
           <BreadcrumbComponent />
         </div>
-        <div className="flex my-2 mx-4 gap-2">
+        <div className="flex my-2 mx-4 gap-2  ">
           <div className="flex-1 w-full">
+            <FileUploader
+              handleChange={handleChange}
+              name="file"
+              
+              classes="!text-red-100 !border-red-50"
+              types={fileTypes}
+            />
             <CreateTask />
             <ListTasks />
           </div>
