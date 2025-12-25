@@ -1,7 +1,5 @@
 import logo from "@/assets/catchup.png";
 import {
-  List,
-  Home,
   Sun,
   Moon,
   UserRoundCheck,
@@ -23,7 +21,7 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { type Dispatch, type SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -85,7 +83,7 @@ export function AppSidebar({ theme, setTheme }: Props) {
                     <Link to={item.url} className="px-5 h-9">
                       <item.icon
                         className={cn(
-                          pathname.pathname == item.url && "fill-current"
+                          pathname.pathname === item.url && "fill-current"
                         )}
                       />
                       <span>{item.title}</span>
@@ -98,7 +96,7 @@ export function AppSidebar({ theme, setTheme }: Props) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="flex items-center justify-center">
-        {theme == "light" ? (
+        {theme === "light" ? (
           <Sun color="orange" onClick={() => setTheme("dark")} />
         ) : (
           <Moon color="white" onClick={() => setTheme("light")} />

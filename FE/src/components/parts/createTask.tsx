@@ -60,7 +60,7 @@ function CreateTask() {
         description: `Task ID: ${id}`,
       });
       form.reset();
-    } catch (err) {}
+    } catch (_err) {}
   }
   return (
     <Form {...form}>
@@ -113,8 +113,7 @@ function CreateTask() {
               />
             )}
             {fillAllTaskDetails && (
-              <>
-                <FormField
+              <FormField
                   control={form.control}
                   name="description"
                   render={({ field }) => (
@@ -130,11 +129,9 @@ function CreateTask() {
                     </FormItem>
                   )}
                 />
-              </>
             )}
             {autoFillTaskDetails && !fillAllTaskDetails && (
-              <>
-                <FormField
+              <FormField
                   control={form.control}
                   name="file"
                   render={({ field }) => (
@@ -147,12 +144,10 @@ function CreateTask() {
                     </FormItem>
                   )}
                 />
-              </>
             )}
 
             {fillAllTaskDetails && (
-              <>
-                <div>
+              <div>
                   <FormField
                     control={form.control}
                     name="dueDate"
@@ -172,7 +167,6 @@ function CreateTask() {
                     )}
                   />
                 </div>
-              </>
             )}
             {!fillAllTaskDetails && <Button type="submit">Submit</Button>}
           </CardContent>

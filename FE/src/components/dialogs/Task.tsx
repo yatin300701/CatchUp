@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Textarea } from "../ui/textarea";
+import { Label } from "../ui/label";
 
 export interface Task {
   id: string;
@@ -53,7 +54,7 @@ const TaskDialog: FC<TaskProps> = ({ open, setOpen, onTaskSubmit }) => {
     timeSelectionMode: "range",
     timeRange: {
       startTime: formatTimeHHMMSS(new Date()),
-      endTime: formatTimeHHMMSS(new Date(new Date().getTime() + HOUR)),
+      endTime: formatTimeHHMMSS(new Date(Date.now()+ HOUR)),
     },
     duration: "",
     dueDate: new Date(),
@@ -62,33 +63,38 @@ const TaskDialog: FC<TaskProps> = ({ open, setOpen, onTaskSubmit }) => {
     description: "",
   });
   return (
-    <>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Task</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col gap-3">
-            <div className="grid w-full  items-center gap-1">
-              <Input
-                type="text"
-                id="name"
-                placeholder="Enter name"
-                value={taskDetails.name}
-                onChange={(e) =>
-                  setTaskDetails((p) => {
-                    return { ...p, name: e.target.value };
-                  })
-                }
-              />
-            </div>
-            <div className="grid grid-cols-2 items-center gap-1">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Task</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-3">
+          <div className="grid w-full  items-center gap-1">
+            <Label htmlFor="name-1">Name</Label>
+            <Input
+              type="text"
+              id="name"
+              placeholder="Enter name"
+              value={taskDetails.name}
+              onChange={(e) =>
+                setTaskDetails((p) => {
+                  return { ...p, name: e.target.value };
+                })
+              }
+            />
+          </div>
+          <div className="grid grid-cols-2 items-center gap-1">
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="date">Date</Label>
               <Calendar22
                 date={taskDetails.dueDate}
                 setDate={(date?: Date) =>
                   setTaskDetails({ ...taskDetails, dueDate: date })
                 }
               />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="date">Mode</Label>
               <Select
                 value={taskDetails.timeSelectionMode}
                 onValueChange={(value) => {
@@ -110,106 +116,67 @@ const TaskDialog: FC<TaskProps> = ({ open, setOpen, onTaskSubmit }) => {
                 </SelectContent>
               </Select>
             </div>
-            {taskDetails.timeSelectionMode == "range" && (
-              <div className="flex gap-1">
-                <Input
-                  type="time"
-                  step="1"
-                  defaultValue={taskDetails.timeRange.startTime}
-                  value={taskDetails.timeRange.startTime}
-                  onChange={(e) => {
-                    console.log(e.target.value);
-                    setTaskDetails({
-                      ...taskDetails,
-                      timeRange: {
-                        ...taskDetails.timeRange,
-                        startTime: e.target.value,
-                      },
-                    });
-                  }}
-                  className="bg-background appearance-none "
-                />
-                <Input
-                  type="time"
-                  step="1"
-                  defaultValue={taskDetails.timeRange.endTime}
-                  className="bg-background appearance-none "
-                />
-              </div>
-            )}
-            {taskDetails.timeSelectionMode == "duration" && (
-              <>
-                <Input
-                  value={taskDetails?.duration}
-                  onChange={(e) => {
-                    setTaskDetails((p) => {
-                      return { ...p, duration: e.target.value };
-                    });
-                  }}
-                  type="number"
-                  placeholder="Expected Duration (minutes)"
-                  className="bg-background appearance-none "
-                />
-              </>
-            )}
+          </div>
+          {taskDetails.timeSelectionMode === "range" && (
             <div className="flex gap-1">
-              <Select
-                value={taskDetails.priority}
-                onValueChange={(value) => {
-                  setTaskDetails({ ...taskDetails, priority: value });
+              <Input
+                type="time"
+                step="1"
+                defaultValue={taskDetails.timeRange.startTime}
+                value={taskDetails.timeRange.startTime}
+                onChange={(e) => {
+                  console.log(e.target.value);
+                  setTaskDetails({
+                    ...taskDetails,
+                    timeRange: {
+                      ...taskDetails.timeRange,
+                      startTime: e.target.value,
+                    },
+                  });
                 }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Priority</SelectLabel>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              <Select
-                value={taskDetails.status}
-                onValueChange={(value) => {
-                  setTaskDetails({ ...taskDetails, status: value });
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectLabel>Status</SelectLabel>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="in-progress">In Progress</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <Textarea
-                placeholder="Description"
-                value={taskDetails.description}
-                onChange={(e) =>
-                  setTaskDetails((pre) => {
-                    return { ...pre, description: e.target.value };
-                  })
-                }
-                className="mb-4"
+                className="bg-background appearance-none "
+              />
+              <Input
+                type="time"
+                step="1"
+                defaultValue={taskDetails.timeRange.endTime}
+                className="bg-background appearance-none "
               />
             </div>
+          )}
+          {taskDetails.timeSelectionMode === "duration" && (
+            <Input
+              value={taskDetails?.duration}
+              onChange={(e) => {
+                setTaskDetails((p) => {
+                  return { ...p, duration: e.target.value };
+                });
+              }}
+              type="number"
+              placeholder="Expected Duration (minutes)"
+              className="bg-background appearance-none "
+            />
+          )}
+
+          <div className="flex flex-col gap-1">
+            <Textarea
+              placeholder="Description"
+              value={taskDetails.description}
+              onChange={(e) =>
+                setTaskDetails((pre) => {
+                  return { ...pre, description: e.target.value };
+                })
+              }
+              className="mb-4"
+            />
           </div>
-          <DialogFooter>
-            <Button variant="ghost">Cancel</Button>
-            <Button onClick={() => onTaskSubmit(taskDetails)}>Save</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost">Cancel</Button>
+          <Button onClick={() => onTaskSubmit(taskDetails)}>Save</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 

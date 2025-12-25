@@ -11,21 +11,21 @@
     <script type="module" src="/src/main.tsx"></script>
     <script>
       if ("serviceWorker" in navigator) {
-        window.addEventListener("load", function () {
+        window.addEventListener("load", () => {
           navigator.serviceWorker
             .register("worker.js")
             .then(
-              function (registration) {
+              (registration) => {
                 console.log(
                   "Worker registration successful",
                   registration.scope
                 );
               },
-              function (err) {
+              (err) => {
                 console.log("Worker registration failed", err);
               }
             )
-            .catch(function (err) {
+            .catch((err) => {
               console.log(err);
             });
         });

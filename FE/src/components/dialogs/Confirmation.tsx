@@ -15,8 +15,7 @@ interface ConfirmationProps {
 
 const Confirmation: FC<ConfirmationProps> = ({ open, onClose }) => {
   return (
-    <>
-      <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onClose}>
         <DialogContent>
           <DialogTitle>Confirmation</DialogTitle>
           <DialogDescription>
@@ -30,7 +29,6 @@ const Confirmation: FC<ConfirmationProps> = ({ open, onClose }) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
   );
 };
 
