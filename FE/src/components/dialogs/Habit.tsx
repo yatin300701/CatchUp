@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import { type FC, useActionState, useState } from "react";
 import { WeekDays } from "@/lib/config";
+import { cn } from "@/lib/utils";
 import type { WeekDay } from "@/models/common";
 import type { Habit } from "@/models/habit";
 import { Button } from "../ui/button";
@@ -57,12 +58,18 @@ const HabitDialog: FC<HabitDialogProps> = ({ open, onSubmit, onClose }) => {
 			description: String(formData.get("description") ?? ""),
 			updatedAt: Date.now(),
 			createdAt: Date.now(),
-			workingDays: [],
+			workingDays: selectedWorkingDays,
 			workingTimePeriod: {
 				start: dayjs(workingTimePeriod.start).unix(),
 				end: dayjs(workingTimePeriod.end).unix(),
 			},
 		};
+		if (
+			updatedHabit.name.trim() === "" ||
+			updatedHabit.workingDays.length === 0
+		)
+			return updatedHabit;
+
 		onSubmit(updatedHabit);
 		return updatedHabit;
 	}
@@ -103,6 +110,7 @@ const HabitDialog: FC<HabitDialogProps> = ({ open, onSubmit, onClose }) => {
 							/>
 							<Calendar22
 								date={workingTimePeriod.start}
+								startDate={new Date()}
 								setDate={(date) => {
 									setWorkingTimePeriod((prev) => {
 										return {
@@ -131,6 +139,7 @@ const HabitDialog: FC<HabitDialogProps> = ({ open, onSubmit, onClose }) => {
 										};
 									});
 								}}
+								endDate={new Date(new Date().getFullYear() + 1, 11)}
 							/>
 						</div>
 					</div>
@@ -139,20 +148,25 @@ const HabitDialog: FC<HabitDialogProps> = ({ open, onSubmit, onClose }) => {
 						<div className="flex gap-2 my-2 items-center ">
 							{WeekDays.map((d) => {
 								return (
-									<div
+									<button
+										type="button"
 										key={d}
-										className="border border-solid border-black size-8 text-sm rounded-full flex items-center justify-center cursor-pointer"
+										className={cn(
+											"border border-solid border-black size-8 text-sm rounded-full flex items-center justify-center cursor-pointer",
+											selectedWorkingDays.includes(d) &&
+												"bg-accent-foreground text-accent",
+										)}
 										onClick={() =>
 											setSelectedWorkingDays((prev) => {
-												if (selectedWorkingDays.includes(d)) {
-													return selectedWorkingDays.filter(d);
+												if (prev.includes(d)) {
+													return prev.filter((day) => d !== day);
 												}
 												return [...prev, d];
 											})
 										}
 									>
 										{d[0]}
-									</div>
+									</button>
 								);
 							})}
 						</div>

@@ -78,15 +78,19 @@ export function AppSidebar({ theme, setTheme }: Props) {
                 <SidebarMenuItem key={item.title} className="px-2 py-0.5">
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname.pathname === item.url}
+                    isActive={
+                      pathname.pathname === item.url ||
+                      pathname.pathname.startsWith(item.url)
+                    }
                   >
-                    <Link to={item.url} className="px-5 h-9">
+                    <Link to={item.url} className="px-3 h-9">
                       <item.icon
                         className={cn(
-                          pathname.pathname === item.url && "fill-current"
+                          pathname.pathname === item.url && "fill-current",
+                          "!size-5"
                         )}
                       />
-                      <span>{item.title}</span>
+                      <span className="text-sm">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

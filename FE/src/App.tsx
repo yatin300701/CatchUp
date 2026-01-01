@@ -6,19 +6,24 @@ import { AppSidebar } from "./components/global/Sidebars";
 import { Toaster } from "@/components/ui/sonner";
 import Home from "./pages/home";
 import Document from "./pages/document";
+import ListTasks from "./components/parts/listTasks";
+import HabitList from "./components/parts/habitList";
+import DayWork from "./components/parts/dayWork";
 
 function App() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
 
   return (
     <div className={cn("bg-background text-foreground", theme)}>
       <BrowserRouter>
         <SidebarProvider>
           <AppSidebar theme={theme} setTheme={setTheme} />
-
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/task" element={<Home />} />
+            <Route path="/task" element={<Home />}>
+              <Route index element={<DayWork />} />
+              <Route path="list" element={<ListTasks />} />
+              <Route path="habit" element={<HabitList />} />
+            </Route>
             <Route path="/document" element={<Document />} />
           </Routes>
 
