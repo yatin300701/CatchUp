@@ -42,8 +42,6 @@ export class TaskRepository {
       })
     );
 
-    console.log("tresult", result);
-
     return (result.Items ?? []).map((item) => ({
       id: item.id,
       name: item.name,
