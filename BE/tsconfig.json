@@ -3,7 +3,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022", "esnext.asynciterable", "DOM"],
-    "typeRoots": ["node_modules/@types"],
+    "typeRoots": ["node_modules/@types", "src/types"],
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -21,18 +21,26 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "importHelpers": true,
-    "baseUrl": "src",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["*"],
+      "@/*": ["src/*"],
       "@config": ["config"],
       "@interfaces/*": ["interfaces/*"],
       "@utils/*": ["utils/*"],
       "@constants/*": ["constants/*"],
       "@plugins/*": ["plugins/*"],
+      "@repository/*": ["repository/*"],
+      "@services/*": ["services/*"],
       "@components/*": ["components/*"],
       "@exceptions/*": ["exceptions/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.json", ".env", "src/**/*.feature", "src/**/*.d.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.json",
+    ".env",
+    "src/**/*.feature",
+    "src/**/*.d.ts"
+  ],
   "exclude": ["node_modules", "src/http", "src/logs", "src/tests"]
 }

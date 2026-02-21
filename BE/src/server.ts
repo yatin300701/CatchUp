@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import { taskRoutes } from "./routes/task.routes";
 import { dynamoPlugin } from "./plugings/dynamodb.plugin";
+import { authRoutes } from "./routes/auth.routes";
 
 const fastify = Fastify({
   logger: true,
@@ -8,6 +9,7 @@ const fastify = Fastify({
 
 fastify.register(dynamoPlugin);
 fastify.ready();
+fastify.register(authRoutes, { prefix: "/api" });
 fastify.register(taskRoutes, { prefix: "/api" });
 
 const start = async () => {

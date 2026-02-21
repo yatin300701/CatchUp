@@ -1,19 +1,18 @@
-export type TimeSelectionMode = "range" | "duration";
-
-export type TaskPriority = "low" | "medium" | "high";
-export type TaskStatus = "todo" | "in_progress" | "done";
+export type TaskStatus = "todo" | "done";
+export type TaskType = "task" | "subtask";
 
 export interface Task {
-  id: string;
+  // DynamoDB keys
+  pk: string; // accountId
+  sk: string; // TASK#<taskId> | TASK#<taskId>#SUBTASK#<subtaskId>
+
+  taskId: string;
+  parentTaskId?: string;
+
   name: string;
-  dueDate: Date | null;
-  timeSelectionMode: TimeSelectionMode;
-  timeRange?: {
-    startTime: string;
-    endTime: string;
-  };
-  duration?: string;
-  priority: TaskPriority;
   status: TaskStatus;
-  description: string;
+  taskType: TaskType;
+
+  createdAt: string;
+  lastUpdatedAt: string;
 }

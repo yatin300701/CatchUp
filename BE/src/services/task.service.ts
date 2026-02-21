@@ -1,30 +1,74 @@
-import { Task } from "@/domain/task.domain";
-import { TaskRepository } from "@/repository/task.repository";
 import crypto from "node:crypto";
+import { TaskRepository } from "@/repository/task.repository";
+import { Task } from "@/domain/task.domain";
 
 export class TaskService {
   constructor(private readonly repo: TaskRepository) {}
 
-  async createTask(data: Omit<Task, "id">): Promise<Task> {
+  async createTask(accountId: string, name: string): Promise<Task> {
+    const taskId = crypto.randomUUID();
+    const now = new Date().toISOString();
+
     const task: Task = {
-      id: crypto.randomUUID(),
-      ...data,
+      pk: accountId,
+      sk: `TASK#${taskId}`,
+
+      taskId,
+      name,
+      status: "todo",
+      taskType: "task",
+
+      createdAt: now,
+      lastUpdatedAt: now,
     };
 
     await this.repo.create(task);
     return task;
   }
 
-  async listTasks(): Promise<Task[]> {
-    return this.repo.list();
+  async createSubtask(
+    accountId: string,
+    taskId: string,
+    name: string
+  ): Promise<Task> {
+    const subtaskId = crypto.randomUUID();
+    const now = new Date().toISOString();
+
+    const subtask: Task = {
+      pk: accountId,
+      sk: `TASK#${taskId}#SUBTASK#${subtaskId}`,
+
+      taskId: subtaskId,
+      parentTaskId: taskId,
+      name,
+      status: "todo",
+      taskType: "subtask",
+
+      createdAt: now,
+      lastUpdatedAt: now,
+    };
+
+    await this.repo.create(subtask);
+    return subtask;
   }
 
-  async updateTask(id: string, data: Partial<Task>): Promise<Task> {
-    const task = await this.repo.update(id, data);
-    return task;
+  async listTasks(accountId: string) {
+    return this.repo.listTasks(accountId);
   }
 
-  async deleteTask(id: string): Promise<void> {
-    await this.repo.delete(id);
+  async updateTask(
+    accountId: string,
+    sk: string,
+    data: { name?: string; status?: "todo" | "done" }
+  ) {
+    await this.repo.update(accountId, sk, data);
   }
+
+  async deleteTask(accountId: string, sk: string) {
+    await this.repo.delete(accountId, sk);
+  }
+}
+export interface JwtPayloads {
+  accountId: string;
+  userId: string;
 }

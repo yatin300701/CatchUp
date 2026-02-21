@@ -1,7 +1,7 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { FastifyPluginAsync } from "fastify";
-import fp from "fastify-plugin"; // Install this: npm install fastify-plugin
+import fp from "fastify-plugin";
 
 declare module "fastify" {
   interface FastifyInstance {

@@ -1,81 +1,44 @@
-import { FastifyRequest, FastifyReply } from "fastify";
-import { TaskService } from "../services/task.service";
-import { Task } from "@/domain/task.domain";
-import { TaskRepository } from "../repository/task.repository";
-
-type CreateTaskRequest = FastifyRequest<{
-  Body: {
-    name: string;
-    dueDate?: string | null;
-    timeSelectionMode: "range" | "duration";
-    timeRange?: { startTime: string; endTime: string };
-    duration?: string;
-    priority: "low" | "medium" | "high";
-    status: "todo" | "in_progress" | "done";
-    description?: string;
-  };
-}>;
-
-type UpdateTaskRequest = FastifyRequest<{
-  Params: {
-    id: string;
-  };
-  Body: Partial<Task>;
-}>;
-
-type DeleteTaskRequest = FastifyRequest<{
-  Params: {
-    id: string;
-  };
-}>;
+import { FastifyReply, FastifyRequest } from "fastify";
+import { TaskRepository } from "../../src/repository/task.repository";
+import { TaskService } from "../../src/services/task.service";
 
 export async function createTaskHandler(
-  request: CreateTaskRequest,
+  request: FastifyRequest<{ Body: { name: string } }>,
   reply: FastifyReply
 ) {
-  const body = request.body;
-  const repo = new TaskRepository(request.server.dynamo);
-  const service = new TaskService(repo);
+  const { name } = request.body;
+  const accountId = request.user.accountId;
 
-  const task: Omit<Task, "id"> = {
-    name: body.name,
-    dueDate: body.dueDate ? new Date(body.dueDate) : null,
-    timeSelectionMode: body.timeSelectionMode,
-    timeRange: body.timeRange,
-    duration: body.duration,
-    priority: body.priority,
-    status: body.status,
-    description: body.description ?? "",
-  };
+  const service = new TaskService(new TaskRepository(request.server.dynamo));
 
-  const created = await service.createTask(task);
-  return reply.code(201).send(created);
+  const task = await service.createTask(accountId, name);
+  reply.code(201).send(task);
+}
+
+export async function createSubtaskHandler(
+  request: FastifyRequest<{
+    Params: { taskId: string };
+    Body: { name: string };
+  }>,
+  reply: FastifyReply
+) {
+  const { taskId } = request.params;
+  const { name } = request.body;
+  const accountId = request.user.accountId;
+
+  const service = new TaskService(new TaskRepository(request.server.dynamo));
+
+  const subtask = await service.createSubtask(accountId, taskId, name);
+  reply.code(201).send(subtask);
 }
 
 export async function listTasksHandler(
   request: FastifyRequest,
   reply: FastifyReply
 ) {
-  const repo = new TaskRepository(request.server.dynamo);
-  const service = new TaskService(repo);
-  const tasks = await service.listTasks();
-  return reply.send(tasks);
-}
+  const accountId = request.user.accountId;
 
-export async function updateTaskHandler(
-  request: UpdateTaskRequest,
-  reply: FastifyReply
-) {
-  const repo = new TaskRepository(request.server.dynamo);
-  const service = new TaskService(repo);
-  return reply.send(service.updateTask(request.params.id, request.body));
-}
+  const service = new TaskService(new TaskRepository(request.server.dynamo));
 
-export async function deleteTaskHandler(
-  request: DeleteTaskRequest,
-  reply: FastifyReply
-) {
-  const repo = new TaskRepository(request.server.dynamo);
-  const service = new TaskService(repo);
-  return reply.send(service.deleteTask(request.params.id));
+  reply.send(await service.listTasks(accountId));
 }
