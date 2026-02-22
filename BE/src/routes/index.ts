@@ -1,8 +1,8 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 
 async function routes(fastify: FastifyInstance, options: FastifyPluginOptions) {
-  fastify.get("/", async (request, reply) => {
-    return { hello: "world" };
+  fastify.get("/ping", async (request, reply) => {
+    return { pong: true };
   });
 }
 
