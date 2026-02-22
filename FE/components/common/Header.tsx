@@ -1,7 +1,7 @@
 import { AccountCircleOutlined } from "@mui/icons-material";
 import { Box } from "@mui/joy";
 
-const Header = ({ children }: { children: React.ReactNode }) => {
+const Header = ({ children }: { children?: React.ReactNode }) => {
   return (
     <Box
       display="flex"
