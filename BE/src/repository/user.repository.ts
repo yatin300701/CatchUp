@@ -8,7 +8,7 @@ import { User } from "@/domain/user.domain";
 export class UserRepository {
   constructor(
     private readonly db: DynamoDBDocumentClient,
-    private readonly tableName = "Users"
+    private readonly tableName = "Users",
   ) {}
 
   async create(user: User): Promise<void> {
@@ -16,8 +16,8 @@ export class UserRepository {
       new PutCommand({
         TableName: this.tableName,
         Item: user,
-        ConditionExpression: "attribute_not_exists(pk)",
-      })
+        ConditionExpression: "attribute_not_exists(email)",
+      }),
     );
   }
 
@@ -25,13 +25,11 @@ export class UserRepository {
     const res = await this.db.send(
       new QueryCommand({
         TableName: this.tableName,
-        IndexName: "email-index", // GSI REQUIRED
         KeyConditionExpression: "email = :email",
         ExpressionAttributeValues: {
           ":email": email,
         },
-        Limit: 1,
-      })
+      }),
     );
 
     return (res.Items?.[0] as User) ?? null;

@@ -1,17 +1,16 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { TaskRepository } from "../../src/repository/task.repository";
-import { TaskService } from "../../src/services/task.service";
+import { TaskService } from "../services/task.service";
+import { TaskRepository } from "../repository/task.repository";
 
 export async function createTaskHandler(
   request: FastifyRequest<{ Body: { name: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const { name } = request.body;
-  const accountId = request.user.accountId;
 
   const service = new TaskService(new TaskRepository(request.server.dynamo));
 
-  const task = await service.createTask(accountId, name);
+  const task = await service.createTask(request.user.email, name);
   reply.code(201).send(task);
 }
 
@@ -20,25 +19,24 @@ export async function createSubtaskHandler(
     Params: { taskId: string };
     Body: { name: string };
   }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const { taskId } = request.params;
   const { name } = request.body;
-  const accountId = request.user.accountId;
 
   const service = new TaskService(new TaskRepository(request.server.dynamo));
 
-  const subtask = await service.createSubtask(accountId, taskId, name);
+  const subtask = await service.createSubtask(request.user.email, taskId, name);
   reply.code(201).send(subtask);
 }
 
 export async function listTasksHandler(
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
-  const accountId = request.user.accountId;
+  const email = request.user.email;
 
   const service = new TaskService(new TaskRepository(request.server.dynamo));
 
-  reply.send(await service.listTasks(accountId));
+  reply.send(await service.listTasks(email));
 }

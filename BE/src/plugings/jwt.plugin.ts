@@ -9,8 +9,14 @@ declare module "fastify" {
   }
 }
 
-export default fp(async (app: FastifyInstance) => {
-  app.register(fastifyJwt, {
-    secret: process.env.JWT_SECRET!,
-  });
-});
+export default fp(
+  async (app: FastifyInstance) => {
+    await app.register(fastifyJwt, {
+      secret: app.config.JWT_SECRET,
+    });
+  },
+  {
+    name: "jwt-plugin",
+    dependencies: ["fastify-env"],
+  },
+);

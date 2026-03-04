@@ -1,4 +1,3 @@
-import crypto from "node:crypto";
 import { UserRepository } from "../repository/user.repository";
 import { hashPassword, verifyPassword } from "../utils/password";
 import { User } from "../domain/user.domain";
@@ -6,33 +5,25 @@ import { User } from "../domain/user.domain";
 export class AuthService {
   constructor(private readonly repo: UserRepository) {}
 
-  async register(email: string, password: string) {
+  async register(email: string, name: string, password: string) {
     const existing = await this.repo.findByEmail(email);
     if (existing) {
       throw new Error("User already exists");
     }
-
-    const userId = crypto.randomUUID();
-    const accountId = crypto.randomUUID();
-    const now = new Date().toISOString();
-
+    const now = Date.now();
     const user: User = {
-      pk: `ACCOUNT#${accountId}`,
-      sk: `USER#${userId}`,
-
-      userId,
-      accountId,
       email,
+      name,
       passwordHash: await hashPassword(password),
       createdAt: now,
+      updatedAt: now,
     };
 
     await this.repo.create(user);
 
     return {
-      userId,
-      accountId,
       email,
+      name,
     };
   }
 
@@ -48,8 +39,8 @@ export class AuthService {
     }
 
     return {
-      userId: user.userId,
-      accountId: user.accountId,
+      email: user.email,
+      name: user.name,
     };
   }
 }

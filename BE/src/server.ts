@@ -3,12 +3,17 @@ import { taskRoutes } from "./routes/task.routes";
 import { dynamoPlugin } from "./plugings/dynamodb.plugin";
 import { authRoutes } from "./routes/auth.routes";
 import pingRoute from "./routes";
+import jwtPlugin from "./plugings/jwt.plugin";
+import fastifyEnvPlugin from "./plugings/fastifyEnv.plugin";
 
 const fastify = Fastify({
   logger: true,
 });
 
+fastify.register(fastifyEnvPlugin);
 fastify.register(dynamoPlugin);
+fastify.register(jwtPlugin);
+
 fastify.ready();
 fastify.register(pingRoute);
 fastify.register(authRoutes, { prefix: "/api" });

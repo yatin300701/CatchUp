@@ -1,12 +1,7 @@
 export interface User {
-  pk: string;
-  sk: string;
-
-  userId: string;
-  accountId: string;
-
-  email: string;
+  email: string; // userId
+  name: string;
   passwordHash: string;
-
-  createdAt: string;
+  createdAt: number;
+  updatedAt: number;
 }

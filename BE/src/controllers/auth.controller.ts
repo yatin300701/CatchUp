@@ -3,18 +3,20 @@ import { AuthService } from "../services/auth.service";
 import { UserRepository } from "../repository/user.repository";
 
 export async function registerHandler(
-  request: FastifyRequest<{ Body: { email: string; password: string } }>,
-  reply: FastifyReply
+  request: FastifyRequest<{
+    Body: { email: string; password: string; name: string };
+  }>,
+  reply: FastifyReply,
 ) {
-  const { email, password } = request.body;
+  const { email, password, name } = request.body;
 
   const service = new AuthService(new UserRepository(request.server.dynamo));
 
-  const user = await service.register(email, password);
+  const user = await service.register(email, password, name);
 
   const token = request.server.jwt.sign({
-    userId: user.userId,
-    accountId: user.accountId,
+    email: user.email,
+    name: user.name,
   });
 
   reply.code(201).send({ token });
@@ -22,7 +24,7 @@ export async function registerHandler(
 
 export async function loginHandler(
   request: FastifyRequest<{ Body: { email: string; password: string } }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const { email, password } = request.body;
 
@@ -31,8 +33,8 @@ export async function loginHandler(
   const user = await service.login(email, password);
 
   const token = request.server.jwt.sign({
-    userId: user.userId,
-    accountId: user.accountId,
+    email: user.email,
+    name: user.name,
   });
 
   reply.send({ token });

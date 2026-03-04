@@ -1,3 +1,4 @@
+import { bootstrapDynamoTables } from "../scripts/automaticTableCreation";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { FastifyPluginAsync } from "fastify";
@@ -15,6 +16,7 @@ const dynamoPluginAsync: FastifyPluginAsync = async (app) => {
     endpoint: "http://localhost:4566",
     credentials: { accessKeyId: "local", secretAccessKey: "local" },
   });
+  await bootstrapDynamoTables(client);
 
   const docClient = DynamoDBDocumentClient.from(client, {
     marshallOptions: { removeUndefinedValues: true },
