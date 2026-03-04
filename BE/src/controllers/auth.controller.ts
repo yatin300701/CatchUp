@@ -12,14 +12,9 @@ export async function registerHandler(
 
   const service = new AuthService(new UserRepository(request.server.dynamo));
 
-  const user = await service.register(email, password, name);
+  await service.register(request, email, name, password);
 
-  const token = request.server.jwt.sign({
-    email: user.email,
-    name: user.name,
-  });
-
-  reply.code(201).send({ token });
+  reply.code(201).send("User registered successfully");
 }
 
 export async function loginHandler(
@@ -30,7 +25,7 @@ export async function loginHandler(
 
   const service = new AuthService(new UserRepository(request.server.dynamo));
 
-  const user = await service.login(email, password);
+  const user = await service.login(request, email, password);
 
   const token = request.server.jwt.sign({
     email: user.email,
