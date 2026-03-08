@@ -16,7 +16,7 @@ const dynamoPluginAsync: FastifyPluginAsync = async (app) => {
     endpoint: "http://localhost:4566",
     credentials: { accessKeyId: "local", secretAccessKey: "local" },
   });
-  await bootstrapDynamoTables(client);
+  await bootstrapDynamoTables(client, app.config.NODE_ENV);
 
   const docClient = DynamoDBDocumentClient.from(client, {
     marshallOptions: { removeUndefinedValues: true },
@@ -25,5 +25,4 @@ const dynamoPluginAsync: FastifyPluginAsync = async (app) => {
   app.decorate("dynamo", docClient);
 };
 
-// Wrap with fp so the decorator is accessible globally
 export const dynamoPlugin = fp(dynamoPluginAsync);

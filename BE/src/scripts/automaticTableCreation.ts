@@ -12,13 +12,25 @@ export const TABLES: CreateTableCommandInput[] = [
     AttributeDefinitions: [{ AttributeName: "email", AttributeType: "S" }],
     BillingMode: "PAY_PER_REQUEST",
   },
+  {
+    TableName: "Tasks",
+    KeySchema: [
+      { AttributeName: "userId", KeyType: "HASH" },
+      { AttributeName: "taskId", KeyType: "RANGE" },
+    ],
+    AttributeDefinitions: [
+      { AttributeName: "userId", AttributeType: "S" },
+      { AttributeName: "taskId", AttributeType: "S" },
+    ],
+    BillingMode: "PAY_PER_REQUEST",
+  },
 ];
 
 export async function bootstrapDynamoTables(
   client: DynamoDBClient,
+  nodeEnv: string,
 ): Promise<void> {
-  console.log(process.env.ENV);
-  // if (process.env.ENV !== "development") return;
+  if (nodeEnv !== "development") return;
 
   for (const table of TABLES) {
     const exists = await tableExists(client, table.TableName!);
