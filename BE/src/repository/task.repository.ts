@@ -29,14 +29,16 @@ export class TaskRepository {
   }
 
   async listTasks(email: string): Promise<Task[]> {
+    const expressionAttributeValues: Record<string, any> = {
+      ":pk": email,
+      ":sk": "TASK#",
+    };
+
     const res = await this.db.send(
       new QueryCommand({
         TableName: this.tableName,
         KeyConditionExpression: "userId = :pk AND begins_with(taskId, :sk)",
-        ExpressionAttributeValues: {
-          ":pk": email,
-          ":sk": "TASK#",
-        },
+        ExpressionAttributeValues: expressionAttributeValues,
       }),
     );
 

@@ -1,7 +1,7 @@
 "use client";
 import { Box } from "@mui/joy";
 import Image from "next/image";
-import { FC } from "react";
+import { FC, Fragment } from "react";
 import {
   Book,
   Calculate,
@@ -66,12 +66,8 @@ const Sidebar: FC<SidebarProps> = () => {
         {sidebarItems.map((item) => {
           const isActive = (href: string) => pathname === href;
           return (
-            <>
-              <Link
-                href={item.href}
-                key={item.label}
-                style={{ textDecoration: "none" }}
-              >
+            <Fragment key={item.label}>
+              <Link href={item.href} style={{ textDecoration: "none" }}>
                 <Box
                   display="flex"
                   alignItems="center"
@@ -98,7 +94,7 @@ const Sidebar: FC<SidebarProps> = () => {
                   {item.label}
                 </Box>
               </Link>
-            </>
+            </Fragment>
           );
         })}
       </Box>

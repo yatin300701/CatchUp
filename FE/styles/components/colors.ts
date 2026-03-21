@@ -24,6 +24,13 @@ export const colors:
         tertiary: "#B3B3B3",
         icon: "#FFFFFF",
       },
+      background: {
+        body: "#212121",
+        surface: "#2A2A2A",
+        level1: "#1D1D1D",
+        level2: "#181818",
+        level3: "#1E1E1E",
+      },
     },
   },
   light: {
@@ -60,7 +67,7 @@ export const colors:
         surface: "#2A2A2A",
         level1: "#1D1D1D",
         level2: "#181818",
-        level3: "#121212",
+        level3: "#1E1E1E",
       },
     },
   },

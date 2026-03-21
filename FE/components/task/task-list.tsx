@@ -1,199 +1,142 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { Box, Checkbox, Input, Typography, useTheme } from "@mui/joy";
 import { CloseOutlined } from "@mui/icons-material";
-import { useEffect, useState } from "react";
-
-type SubTask = {
-  id: number;
-  name: string;
-  completed: boolean;
-  createdAt: number;
-};
-
-export type Task = {
-  id: number;
-  name: string;
-  completed: boolean;
-  createdAt: number;
-  subTasks?: SubTask[];
-};
-
-async function getTasks(): Promise<Task[]> {
-  return [
-    {
-      id: 1,
-      name: "Dzylo",
-      completed: false,
-      createdAt: Date.now(),
-      subTasks: [
-        {
-          id: 10,
-          name: "Task 1",
-          completed: false,
-          createdAt: Date.now(),
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Old Task",
-      completed: false,
-      createdAt: Date.now() - 86400000 * 2,
-    },
-  ];
-}
+import {
+  useCreateSubTask,
+  useCreateTask,
+  useDeleteTask,
+  useTasks,
+  useUpdateTask,
+} from "@/hooks/task";
+import { SubTask, Task } from "@/types/task.types";
+import { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function TasksList() {
   const theme = useTheme();
+  const [newlyCreatedId, setNewlyCreatedId] = useState<string | null>(null);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["tasks"],
-    queryFn: getTasks,
-  });
+  const {
+    data: tasks = [],
+    isLoading,
+    error,
+  } = useTasks();
 
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const createTaskMutation = useCreateTask();
+  const createSubTaskMutation = useCreateSubTask();
+  const updateTaskMutation = useUpdateTask();
+  const deleteTaskMutation = useDeleteTask();
 
-  useEffect(() => {
-    if (data) setTasks(data);
-  }, [data]);
+  const sortedTasks = useMemo(
+    () => [...tasks].sort((a, b) => b.createdAt - a.createdAt),
+    [tasks],
+  );
 
   if (isLoading) return <Typography>Loading...</Typography>;
   if (error) return <Typography>Error loading tasks</Typography>;
 
-  const isToday = (timestamp: number) => {
-    const today = new Date();
-    const d = new Date(timestamp);
-    return (
-      d.getFullYear() === today.getFullYear() &&
-      d.getMonth() === today.getMonth() &&
-      d.getDate() === today.getDate()
-    );
+  const toggleTask = (taskId: string, task: Task) => {
+    const newStatus = task.status === "Done" ? "Todo" : "Done";
+
+    updateTaskMutation.mutate({
+      id: taskId,
+      payload: {
+        text: task.text,
+        taskType: "Task",
+        status: newStatus,
+      },
+    });
   };
 
-  const todayTasks = tasks?.filter((t) => isToday(t.createdAt));
-  const remainingTasks = tasks?.filter((t) => !isToday(t.createdAt));
+  const toggleSubTask = (taskId: string, sub: SubTask) => {
+    const newStatus = sub.status === "Done" ? "Todo" : "Done";
 
-  const toggleTask = (taskId: number) => {
-    setTasks((prev) =>
-      prev.map((task) => {
-        if (task.id !== taskId) return task;
-
-        const newCompleted = !task.completed;
-
-        return {
-          ...task,
-          completed: newCompleted,
-          subTasks: task.subTasks?.map((sub) => ({
-            ...sub,
-            completed: newCompleted,
-          })),
-        };
-      }),
-    );
+    updateTaskMutation.mutate({
+      id: sub.taskId,
+      payload: {
+        text: sub.text,
+        taskType: "Subtask",
+        status: newStatus,
+        parentTaskId: taskId,
+      },
+    });
   };
 
-  const toggleSubTask = (taskId: number, subTaskId: number) => {
-    setTasks((prev) =>
-      prev.map((task) => {
-        if (task.id !== taskId) return task;
-
-        const updatedSubs =
-          task.subTasks?.map((sub) =>
-            sub.id === subTaskId ? { ...sub, completed: !sub.completed } : sub,
-          ) ?? [];
-
-        const allCompleted =
-          updatedSubs.length > 0 && updatedSubs.every((s) => s.completed);
-
-        return {
-          ...task,
-          completed: allCompleted,
-          subTasks: updatedSubs,
-        };
-      }),
-    );
+  const editTaskName = (task: Task, value: string) => {
+    updateTaskMutation.mutate({
+      id: task.taskId,
+      payload: {
+        text: value,
+        taskType: "Task",
+        status: task.status,
+      },
+    });
   };
 
-  const editTaskName = (taskId: number, value: string) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId ? { ...task, name: value } : task,
-      ),
-    );
-  };
-
-  const editSubTaskName = (
-    taskId: number,
-    subTaskId: number,
-    value: string,
-  ) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              subTasks: task.subTasks?.map((sub) =>
-                sub.id === subTaskId ? { ...sub, name: value } : sub,
-              ),
-            }
-          : task,
-      ),
-    );
+  const editSubTaskName = (taskId: string, sub: SubTask, value: string) => {
+    updateTaskMutation.mutate({
+      id: sub.taskId,
+      payload: {
+        text: value,
+        taskType: "Subtask",
+        status: sub.status,
+        parentTaskId: taskId,
+      },
+    });
   };
 
   const addTask = () => {
-    const newTask: Task = {
-      id: Date.now(),
-      name: "New Task",
-      completed: false,
-      createdAt: Date.now(),
-      subTasks: [],
-    };
-
-    setTasks((prev) => [...prev, newTask]);
-  };
-
-  const addSubTask = (taskId: number) => {
-    const newSub: SubTask = {
-      id: Date.now(),
-      name: "New Subtask",
-      completed: false,
-      createdAt: Date.now(),
-    };
-
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              subTasks: [...(task.subTasks || []), newSub],
-            }
-          : task,
-      ),
+    createTaskMutation.mutate(
+      { text: "New Task" },
+      {
+        onSuccess: (data: any) => {
+          setNewlyCreatedId(data.taskId);
+        },
+      },
     );
   };
 
-  const deleteTask = (taskId: number) => {
-    setTasks((prev) => prev.filter((task) => task.id !== taskId));
+  const addSubTask = (taskId: string) => {
+    createSubTaskMutation.mutate(
+      {
+        taskId,
+        name: "New Subtask",
+      },
+      {
+        onSuccess: (data: any) => {
+          setNewlyCreatedId(data.taskId);
+        },
+      },
+    );
   };
 
-  const deleteSubTask = (taskId: number, subTaskId: number) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              subTasks: task.subTasks?.filter((sub) => sub.id !== subTaskId),
-            }
-          : task,
-      ),
-    );
+  const deleteTask = (taskId: string) => {
+    deleteTaskMutation.mutate({ taskId });
+  };
+
+  const deleteSubTask = (taskId: string, subTaskId: string) => {
+    deleteTaskMutation.mutate({ taskId, subtaskId: subTaskId });
   };
 
   const renderTask = (task: Task) => (
-    <Box key={task.id} display="flex" flexDirection="column">
+    <motion.div
+      key={task.taskId}
+      layout
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{
+        x: [0, -2, 2, -2, 2, 0],
+        scale: [1, 1.1, 0],
+        opacity: [1, 1, 0],
+        transition: {
+          x: { duration: 0.2, repeat: 1 },
+          scale: { duration: 0.4, delay: 0.2 },
+          opacity: { duration: 0.3, delay: 0.2 },
+        },
+      }}
+      style={{ display: "flex", flexDirection: "column" }}
+    >
       <Box
         display="flex"
         alignItems="center"
@@ -208,25 +151,37 @@ export default function TasksList() {
       >
         <Checkbox
           size="sm"
-          checked={task.completed}
-          onChange={() => toggleTask(task.id)}
+          checked={task.status === "Done"}
+          onChange={() => toggleTask(task.taskId, task)}
         />
 
         <Input
-          value={task.name}
+          defaultValue={task.text}
           variant="noborder"
           size="sm"
           fullWidth
+          autoFocus={task.taskId === newlyCreatedId}
+          onFocus={(e) => {
+            if (task.taskId === newlyCreatedId) {
+              setNewlyCreatedId(null);
+              e.target.select();
+            }
+          }}
           sx={{
             width: "80%",
-            textDecoration: task.completed ? "line-through" : "none",
+            textDecoration: task.status === "Done" ? "line-through" : "none",
           }}
-          onChange={(e) => editTaskName(task.id, e.target.value)}
+          onBlur={(e) => editTaskName(task, e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              (e.target as HTMLInputElement).blur();
+            }
+          }}
         />
 
         <CloseOutlined
           className="closeIcon"
-          onClick={() => deleteTask(task.id)}
+          onClick={() => deleteTask(task.taskId)}
           sx={{
             cursor: "pointer",
             color: theme.palette.primary[400],
@@ -235,100 +190,137 @@ export default function TasksList() {
       </Box>
 
       <Box ml={3} display="flex" flexDirection="column" gap={1}>
-        {task.subTasks?.map((sub) => (
-          <Box
-            key={sub.id}
-            display="flex"
-            alignItems="center"
-            gap={1}
-            sx={{
-              ".closeIcon": { display: "none" },
-              ":hover": {
-                ".closeIcon": { display: "block" },
-                input: {
-                  color: theme.palette.text.primary,
+        <AnimatePresence>
+          {task.subtasks?.map((sub) => (
+            <Box
+              component={motion.div}
+              key={sub.taskId}
+              layout
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{
+                x: [0, -2, 2, -2, 2, 0],
+                scale: [1, 1.1, 0],
+                opacity: [1, 1, 0],
+                transition: {
+                  x: { duration: 0.2, repeat: 1 },
+                  scale: { duration: 0.4, delay: 0.2 },
+                  opacity: { duration: 0.3, delay: 0.2 },
                 },
-              },
-            }}
-          >
-            <Checkbox
-              size="sm"
-              variant="rounded"
-              checked={sub.completed}
-              onChange={() => toggleSubTask(task.id, sub.id)}
-            />
-
-            <Input
-              value={sub.name}
-              variant="noborder"
-              size="sm"
-              fullWidth
-              sx={{
-                width: "80%",
-                textDecoration: sub.completed ? "line-through" : "none",
               }}
-              onChange={(e) => editSubTaskName(task.id, sub.id, e.target.value)}
-            />
-
-            <CloseOutlined
-              className="closeIcon"
-              onClick={() => deleteSubTask(task.id, sub.id)}
               sx={{
-                cursor: "pointer",
-                color: theme.palette.primary[400],
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                ".subCloseIcon": { display: "none" },
+                ":hover": {
+                  ".subCloseIcon": { display: "block" },
+                },
               }}
-            />
-          </Box>
-        ))}
+            >
+              <Checkbox
+                size="sm"
+                variant="rounded"
+                checked={sub.status === "Done"}
+                onChange={() => toggleSubTask(task.taskId, sub)}
+              />
 
-        {!task?.completed && (
+              <Input
+                defaultValue={sub.text}
+                variant="noborder"
+                size="sm"
+                fullWidth
+                autoFocus={sub.taskId === newlyCreatedId}
+                onFocus={(e) => {
+                  if (sub.taskId === newlyCreatedId) {
+                    setNewlyCreatedId(null);
+                    e.target.select();
+                  }
+                }}
+                sx={{
+                  width: "80%",
+                  textDecoration:
+                    sub.status === "Done" ? "line-through" : "none",
+                }}
+                onBlur={(e) =>
+                  editSubTaskName(task.taskId, sub, e.target.value)
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    (e.target as HTMLInputElement).blur();
+                  }
+                }}
+              />
+
+              <CloseOutlined
+                className="subCloseIcon"
+                onClick={() => deleteSubTask(task.taskId, sub.taskId)}
+                sx={{
+                  cursor: "pointer",
+                  color: theme.palette.primary[400],
+                  fontSize: 18,
+                }}
+              />
+            </Box>
+          ))}
+        </AnimatePresence>
+
+        {task.status !== "Done" && (
           <Typography
             level="body-sm"
             sx={{
               color: theme.palette.primary[500],
               cursor: "pointer",
             }}
-            onClick={() => addSubTask(task.id)}
+            onClick={() => addSubTask(task.taskId)}
           >
             + Add subtask
           </Typography>
         )}
       </Box>
-    </Box>
+    </motion.div>
   );
 
   return (
     <Box>
-      <Typography level="h4" mb={2}>
-        Today
-      </Typography>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={3}
+      >
+        <Typography level="h3">Tasks</Typography>
+      </Box>
 
       <Box display="flex" flexDirection="column" gap={2}>
-        {todayTasks.map(renderTask)}
+        <AnimatePresence mode="popLayout">
+          {sortedTasks.length > 0 ? (
+            sortedTasks.map(renderTask)
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              key="no-tasks"
+            >
+              <Typography color="neutral" sx={{ textAlign: "center", py: 4 }}>
+                No tasks found.
+              </Typography>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <Typography
           level="body-sm"
           sx={{
             color: theme.palette.primary[400],
             cursor: "pointer",
+            mt: 1,
           }}
           onClick={addTask}
         >
           + Add Task
         </Typography>
       </Box>
-
-      {remainingTasks.length > 0 && (
-        <Box>
-          <Typography level="h4" mt={4} mb={2}>
-            Remaining Tasks
-          </Typography>
-
-          <Box display="flex" flexDirection="column" gap={2}>
-            {remainingTasks.map(renderTask)}
-          </Box>
-        </Box>
-      )}
     </Box>
   );
 }

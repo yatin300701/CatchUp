@@ -1,31 +1,21 @@
+import { Task, SubTask } from "@/types/task.types";
 import { CloseOutlined } from "@mui/icons-material";
 import { Box, Checkbox, Input, Typography } from "@mui/joy";
-
-export type SubTask = {
-  id: number;
-  name: string;
-  completed: boolean;
-  createdAt: number;
-};
-
-export type Task = {
-  id: number;
-  name: string;
-  completed: boolean;
-  createdAt: number;
-  subTasks?: SubTask[];
-};
 
 export type TaskItemProps = {
   task: Task;
   theme: any;
-  onToggleTask: (taskId: number) => void;
-  onToggleSubTask: (taskId: number, subTaskId: number) => void;
-  onEditTask: (taskId: number, value: string) => void;
-  onEditSubTask: (taskId: number, subTaskId: number, value: string) => void;
-  onAddSubTask: (taskId: number) => void;
-  onDeleteTask: (taskId: number) => void;
-  onDeleteSubTask: (taskId: number, subTaskId: number) => void;
+
+  onToggleTask: (task: Task) => void;
+  onToggleSubTask: (taskId: string, sub: SubTask) => void;
+
+  onEditTask: (task: Task, value: string) => void;
+  onEditSubTask: (taskId: string, sub: SubTask, value: string) => void;
+
+  onAddSubTask: (taskId: string) => void;
+
+  onDeleteTask: (taskId: string) => void;
+  onDeleteSubTask: (subTaskId: string) => void;
 };
 
 export function TaskItem({
@@ -52,25 +42,25 @@ export function TaskItem({
       >
         <Checkbox
           size="sm"
-          checked={task.completed}
-          onChange={() => onToggleTask(task.id)}
+          checked={task.status === "Done"}
+          onChange={() => onToggleTask(task)}
         />
 
         <Input
-          value={task.name}
+          defaultValue={task.text}
           variant="noborder"
           size="sm"
           fullWidth
           sx={{
-            textDecoration: task.completed ? "line-through" : "none",
+            textDecoration: task.status === "Done" ? "line-through" : "none",
             transition: "all 0.2s ease",
           }}
-          onChange={(e) => onEditTask(task.id, e.target.value)}
+          onBlur={(e) => onEditTask(task, e.target.value)}
         />
 
         <CloseOutlined
           className="closeIcon"
-          onClick={() => onDeleteTask(task.id)}
+          onClick={() => onDeleteTask(task.taskId)}
           sx={{
             width: 20,
             height: 20,
@@ -81,9 +71,9 @@ export function TaskItem({
       </Box>
 
       <Box ml={3} display="flex" flexDirection="column" gap={1}>
-        {task.subTasks?.map((sub) => (
+        {task.subtasks?.map((sub) => (
           <Box
-            key={sub.id}
+            key={sub.taskId}
             display="flex"
             alignItems="center"
             gap={1}
@@ -95,25 +85,25 @@ export function TaskItem({
             <Checkbox
               size="sm"
               variant="rounded"
-              checked={sub.completed}
-              onChange={() => onToggleSubTask(task.id, sub.id)}
+              checked={sub.status === "Done"}
+              onChange={() => onToggleSubTask(task.taskId, sub)}
             />
 
             <Input
-              value={sub.name}
+              defaultValue={sub.text}
               variant="noborder"
               size="sm"
               fullWidth
               sx={{
-                textDecoration: sub.completed ? "line-through" : "none",
+                textDecoration: sub.status === "Done" ? "line-through" : "none",
                 transition: "all 0.2s ease",
               }}
-              onChange={(e) => onEditSubTask(task.id, sub.id, e.target.value)}
+              onBlur={(e) => onEditSubTask(task.taskId, sub, e.target.value)}
             />
 
             <CloseOutlined
               className="closeIcon"
-              onClick={() => onDeleteSubTask(task.id, sub.id)}
+              onClick={() => onDeleteSubTask(sub.taskId)}
               sx={{
                 width: 20,
                 height: 20,
@@ -124,16 +114,18 @@ export function TaskItem({
           </Box>
         ))}
 
-        <Typography
-          level="body-sm"
-          sx={{
-            color: theme.palette.primary[500],
-            cursor: "pointer",
-          }}
-          onClick={() => onAddSubTask(task.id)}
-        >
-          + Add subtask
-        </Typography>
+        {task.status !== "Done" && (
+          <Typography
+            level="body-sm"
+            sx={{
+              color: theme.palette.primary[500],
+              cursor: "pointer",
+            }}
+            onClick={() => onAddSubTask(task.taskId)}
+          >
+            + Add subtask
+          </Typography>
+        )}
       </Box>
     </Box>
   );
