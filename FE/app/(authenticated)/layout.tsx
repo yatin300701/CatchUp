@@ -1,18 +1,56 @@
+"use client";
+
 import Sidebar from "@/components/common/sidebar";
 import { Box } from "@mui/joy";
+import { createContext, useContext, useState } from "react";
+
+interface SidebarContextType {
+  open: () => void;
+}
+
+const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
+
+export const useSidebar = () => {
+  const context = useContext(SidebarContext);
+  if (!context) {
+    throw new Error("useSidebar must be used within a SidebarLayout");
+  }
+  return context;
+};
 
 const SidebarLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
-    <Box display="flex" height="100vh" width="100vw">
-      <Sidebar />
-      <Box flex={1} overflow="auto" component="main">
-        <Box>{children}</Box>
+    <SidebarContext.Provider value={{ open: () => setIsSidebarOpen(true) }}>
+      <Box display="flex" height="100vh" width="100vw" overflow="hidden">
+        {isSidebarOpen && (
+          <Box
+            onClick={() => setIsSidebarOpen(false)}
+            sx={{
+              position: "fixed",
+              inset: 0,
+              bgcolor: "rgba(0,0,0,0.5)",
+              zIndex: 999,
+              display: { xs: "block", md: "none" },
+            }}
+          />
+        )}
+        <Sidebar open={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        <Box
+          flex={1}
+          overflow="auto"
+          component="main"
+          sx={{ position: "relative" }}
+        >
+          <Box>{children}</Box>
+        </Box>
       </Box>
-    </Box>
+    </SidebarContext.Provider>
   );
 };
 

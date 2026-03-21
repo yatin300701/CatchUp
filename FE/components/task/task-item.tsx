@@ -53,7 +53,7 @@ export function TaskItem({
           fullWidth
           sx={{
             textDecoration: task.status === "Done" ? "line-through" : "none",
-            transition: "all 0.2s ease",
+            transition: "all 0s ease",
           }}
           onBlur={(e) => onEditTask(task, e.target.value)}
         />

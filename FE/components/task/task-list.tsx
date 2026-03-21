@@ -17,21 +17,25 @@ export default function TasksList() {
   const theme = useTheme();
   const [newlyCreatedId, setNewlyCreatedId] = useState<string | null>(null);
 
-  const {
-    data: tasks = [],
-    isLoading,
-    error,
-  } = useTasks();
+  const { data: tasks = [], isLoading, error } = useTasks();
 
   const createTaskMutation = useCreateTask();
   const createSubTaskMutation = useCreateSubTask();
   const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
 
-  const sortedTasks = useMemo(
-    () => [...tasks].sort((a, b) => b.createdAt - a.createdAt),
-    [tasks],
-  );
+  const sortedTasks = useMemo(() => {
+    const sortFn = (a: any, b: any) => {
+      if (a.status === "Done" && b.status !== "Done") return 1;
+      if (a.status !== "Done" && b.status === "Done") return -1;
+      return b.createdAt - a.createdAt;
+    };
+
+    return [...tasks].sort(sortFn).map((task) => ({
+      ...task,
+      subtasks: task.subtasks ? [...task.subtasks].sort(sortFn) : [],
+    }));
+  }, [tasks]);
 
   if (isLoading) return <Typography>Loading...</Typography>;
   if (error) return <Typography>Error loading tasks</Typography>;
@@ -47,6 +51,23 @@ export default function TasksList() {
         status: newStatus,
       },
     });
+
+    // Cascade to subtasks if marking as Done
+    if (newStatus === "Done" && task.subtasks) {
+      task.subtasks.forEach((sub) => {
+        if (sub.status !== "Done") {
+          updateTaskMutation.mutate({
+            id: sub.taskId,
+            payload: {
+              text: sub.text,
+              taskType: "Subtask",
+              status: "Done",
+              parentTaskId: taskId,
+            },
+          });
+        }
+      });
+    }
   };
 
   const toggleSubTask = (taskId: string, sub: SubTask) => {
@@ -123,19 +144,10 @@ export default function TasksList() {
     <motion.div
       key={task.taskId}
       layout
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{
-        x: [0, -2, 2, -2, 2, 0],
-        scale: [1, 1.1, 0],
-        opacity: [1, 1, 0],
-        transition: {
-          x: { duration: 0.2, repeat: 1 },
-          scale: { duration: 0.4, delay: 0.2 },
-          opacity: { duration: 0.3, delay: 0.2 },
-        },
-      }}
-      style={{ display: "flex", flexDirection: "column" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}
     >
       <Box
         display="flex"
@@ -155,29 +167,46 @@ export default function TasksList() {
           onChange={() => toggleTask(task.taskId, task)}
         />
 
-        <Input
-          defaultValue={task.text}
-          variant="noborder"
-          size="sm"
-          fullWidth
-          autoFocus={task.taskId === newlyCreatedId}
-          onFocus={(e) => {
-            if (task.taskId === newlyCreatedId) {
-              setNewlyCreatedId(null);
-              e.target.select();
-            }
-          }}
-          sx={{
-            width: "80%",
-            textDecoration: task.status === "Done" ? "line-through" : "none",
-          }}
-          onBlur={(e) => editTaskName(task, e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              (e.target as HTMLInputElement).blur();
-            }
-          }}
-        />
+        <Box sx={{ position: "relative", width: "80%" }}>
+          <Input
+            defaultValue={task.text}
+            variant="noborder"
+            size="sm"
+            fullWidth
+            autoFocus={task.taskId === newlyCreatedId}
+            onFocus={(e) => {
+              if (task.taskId === newlyCreatedId) {
+                setNewlyCreatedId(null);
+                e.target.select();
+              }
+            }}
+            sx={{
+              color:
+                task.status === "Done"
+                  ? theme.palette.text.secondary
+                  : theme.palette.text.primary,
+            }}
+            onBlur={(e) => editTaskName(task, e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                (e.target as HTMLInputElement).blur();
+              }
+            }}
+          />
+          <motion.div
+            initial={false}
+            animate={{ width: task.status === "Done" ? "100%" : "0%" }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            style={{
+              position: "absolute",
+              left: 0,
+              top: "50%",
+              height: "1px",
+              backgroundColor: theme.palette.text.secondary,
+              pointerEvents: "none",
+            }}
+          />
+        </Box>
 
         <CloseOutlined
           className="closeIcon"
@@ -196,18 +225,9 @@ export default function TasksList() {
               component={motion.div}
               key={sub.taskId}
               layout
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{
-                x: [0, -2, 2, -2, 2, 0],
-                scale: [1, 1.1, 0],
-                opacity: [1, 1, 0],
-                transition: {
-                  x: { duration: 0.2, repeat: 1 },
-                  scale: { duration: 0.4, delay: 0.2 },
-                  opacity: { duration: 0.3, delay: 0.2 },
-                },
-              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               sx={{
                 display: "flex",
                 alignItems: "center",
@@ -225,32 +245,48 @@ export default function TasksList() {
                 onChange={() => toggleSubTask(task.taskId, sub)}
               />
 
-              <Input
-                defaultValue={sub.text}
-                variant="noborder"
-                size="sm"
-                fullWidth
-                autoFocus={sub.taskId === newlyCreatedId}
-                onFocus={(e) => {
-                  if (sub.taskId === newlyCreatedId) {
-                    setNewlyCreatedId(null);
-                    e.target.select();
+              <Box sx={{ position: "relative", width: "80%" }}>
+                <Input
+                  defaultValue={sub.text}
+                  variant="noborder"
+                  size="sm"
+                  fullWidth
+                  autoFocus={sub.taskId === newlyCreatedId}
+                  onFocus={(e) => {
+                    if (sub.taskId === newlyCreatedId) {
+                      setNewlyCreatedId(null);
+                      e.target.select();
+                    }
+                  }}
+                  sx={{
+                    color:
+                      sub.status === "Done"
+                        ? theme.palette.text.secondary
+                        : theme.palette.text.primary,
+                  }}
+                  onBlur={(e) =>
+                    editSubTaskName(task.taskId, sub, e.target.value)
                   }
-                }}
-                sx={{
-                  width: "80%",
-                  textDecoration:
-                    sub.status === "Done" ? "line-through" : "none",
-                }}
-                onBlur={(e) =>
-                  editSubTaskName(task.taskId, sub, e.target.value)
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    (e.target as HTMLInputElement).blur();
-                  }
-                }}
-              />
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      (e.target as HTMLInputElement).blur();
+                    }
+                  }}
+                />
+                <motion.div
+                  initial={false}
+                  animate={{ width: sub.status === "Done" ? "100%" : "0%" }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    top: "50%",
+                    height: "1px",
+                    backgroundColor: theme.palette.text.secondary,
+                    pointerEvents: "none",
+                  }}
+                />
+              </Box>
 
               <CloseOutlined
                 className="subCloseIcon"

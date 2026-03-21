@@ -5,6 +5,7 @@ import { FC, Fragment } from "react";
 import {
   Book,
   Calculate,
+  Close,
   PostAdd,
   TaskAlt,
   TrackChanges,
@@ -12,8 +13,12 @@ import {
 } from "@mui/icons-material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { IconButton } from "@mui/joy";
 
-interface SidebarProps {}
+interface SidebarProps {
+  open?: boolean;
+  onClose?: () => void;
+}
 
 const sidebarItems = [
   {
@@ -48,20 +53,38 @@ const sidebarItems = [
   },
 ];
 
-const Sidebar: FC<SidebarProps> = () => {
+const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
   const pathname = usePathname();
 
   return (
     <Box
-      width={250}
-      height="100%"
-      bgcolor="primary.700"
-      display="flex"
-      flexDirection="column"
-      color="white"
-      p={2}
+      sx={{
+        width: 250,
+        height: "100%",
+        bgcolor: "primary.700",
+        display: "flex",
+        flexDirection: "column",
+        color: "white",
+        p: 2,
+        position: { xs: "absolute", md: "relative" },
+        left: { xs: open ? 0 : -250, md: 0 },
+        zIndex: 1000,
+        transition: "left 0.3s ease-in-out",
+        boxShadow: { xs: open ? "4px 0px 10px rgba(0,0,0,0.5)" : "none", md: "none" },
+      }}
     >
-      <Image src="/catchuplogo.svg" alt="CatchUp" width={120} height={40} />
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Image src="/catchuplogo.svg" alt="CatchUp" width={120} height={40} />
+        {onClose && (
+          <IconButton
+            variant="plain"
+            onClick={onClose}
+            sx={{ display: { xs: "inline-flex", md: "none" }, color: "white" }}
+          >
+            <Close />
+          </IconButton>
+        )}
+      </Box>
       <Box mt={2}>
         {sidebarItems.map((item) => {
           const isActive = (href: string) => pathname === href;

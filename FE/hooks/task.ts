@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createTask } from "@/api/task.api";
 import { updateTask } from "@/api/task.api";
 import { deleteTask } from "@/api/task.api";
-import { CreateSubTaskPayload } from "@/types/task.types";
+import { CreateSubTaskPayload, Task } from "@/types/task.types";
 
 export function useTasks() {
   return useQuery({
@@ -41,8 +41,31 @@ export function useUpdateTask() {
 
   return useMutation({
     mutationFn: ({ id, payload }: any) => updateTask(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    onSuccess: (_, variables) => {
+      const { id, payload } = variables;
+      queryClient.setQueryData(["tasks"], (oldTasks: Task[] | undefined) => {
+        if (!oldTasks) return [];
+
+        return oldTasks.map((task) => {
+          if (payload.taskType === "Task" && task.taskId === id) {
+            return { ...task, ...payload };
+          }
+
+          if (
+            payload.taskType === "Subtask" &&
+            task.taskId === payload.parentTaskId
+          ) {
+            return {
+              ...task,
+              subtasks: task.subtasks?.map((sub) =>
+                sub.taskId === id ? { ...sub, ...payload } : sub,
+              ),
+            };
+          }
+
+          return task;
+        });
+      });
     },
   });
 }
