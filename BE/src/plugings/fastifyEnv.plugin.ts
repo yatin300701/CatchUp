@@ -11,7 +11,7 @@ declare module "fastify" {
       AWS_SECRET_ACCESS_KEY: string;
       JWT_SECRET: string;
       NODE_ENV: string;
-        ENV: string;
+      ENV: string;
       AWS_DYNAMODB_ENDPOINT: string;
     };
   }
@@ -19,13 +19,7 @@ declare module "fastify" {
 
 const schema = {
   type: "object",
-  required: [
-    "APP_PORT",
-    "AWS_REGION",
-    "AWS_ACCESS_KEY_ID",
-    "AWS_SECRET_ACCESS_KEY",
-    "JWT_SECRET",
-  ],
+  required: ["APP_PORT", "AWS_REGION", "JWT_SECRET"],
   properties: {
     APP_PORT: {
       type: "number",
@@ -60,7 +54,6 @@ const schema = {
 
     AWS_DYNAMODB_ENDPOINT: {
       type: "string",
-      default: "http://localhost:4566",
     },
   },
 };
