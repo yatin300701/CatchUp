@@ -1,0 +1,22 @@
+services:
+  backend:
+    build:
+      context: ./BE
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./BE/.env
+    restart: always
+
+  frontend:
+    build:
+      context: ./fe
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_BASE_URL=http://localhost:5000 # Default for local, override in EC2
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: always

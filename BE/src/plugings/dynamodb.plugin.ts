@@ -12,9 +12,12 @@ declare module "fastify" {
 
 const dynamoPluginAsync: FastifyPluginAsync = async (app) => {
   const client = new DynamoDBClient({
-    region: "ap-south-1",
-    endpoint: "http://localhost:4566",
-    credentials: { accessKeyId: "local", secretAccessKey: "local" },
+    region: app.config.AWS_REGION,
+    endpoint: app.config.AWS_DYNAMODB_ENDPOINT,
+    credentials: {
+      accessKeyId: app.config.AWS_ACCESS_KEY_ID,
+      secretAccessKey: app.config.AWS_SECRET_ACCESS_KEY,
+    },
   });
   await bootstrapDynamoTables(client, app.config.NODE_ENV);
 

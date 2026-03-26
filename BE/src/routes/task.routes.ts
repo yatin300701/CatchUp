@@ -5,7 +5,7 @@ import {
   deleteTaskHandler,
   listTasksHandler,
   updateTaskHandler,
-} from "../../src/controllers/task.controller";
+} from "../controllers/task.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 
 export async function taskRoutes(app: FastifyInstance) {
