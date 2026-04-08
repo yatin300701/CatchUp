@@ -31,7 +31,10 @@ fastify.register(taskRoutes, { prefix: "/api" });
 const start = async () => {
   try {
     await fastify.ready();
-    await fastify.listen({ port: 5000, host: "0.0.0.0" });
+    await fastify.listen({
+      port: fastify.config.APP_PORT,
+      host: "0.0.0.0",
+    });
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
