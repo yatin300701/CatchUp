@@ -34,7 +34,6 @@ const SidebarLayout = ({
             sx={{
               position: "fixed",
               inset: 0,
-              bgcolor: "rgba(0,0,0,0.5)",
               zIndex: 999,
               display: { xs: "block", md: "none" },
             }}
@@ -47,7 +46,7 @@ const SidebarLayout = ({
           component="main"
           sx={{ position: "relative" }}
         >
-          <Box>{children}</Box>
+          <Box height="100%">{children}</Box>
         </Box>
       </Box>
     </SidebarContext.Provider>

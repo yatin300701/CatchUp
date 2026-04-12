@@ -2,7 +2,7 @@
 import createCache from "@emotion/cache";
 import { useServerInsertedHTML } from "next/navigation";
 import { CacheProvider } from "@emotion/react";
-import { CssVarsProvider } from "@mui/joy/styles";
+import { CssVarsProvider, useColorScheme } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import { useState } from "react";
 import { theme } from "@/styles/theme";
@@ -53,7 +53,7 @@ export default function ThemeRegistry(props: any) {
 
   return (
     <CacheProvider value={cache}>
-      <CssVarsProvider theme={theme}>
+      <CssVarsProvider theme={theme} disableTransitionOnChange>
         <CssBaseline />
         <Box height="100%" minHeight="100vh">
           {children}

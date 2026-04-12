@@ -70,7 +70,10 @@ const Sidebar: FC<SidebarProps> = ({ open, onClose }) => {
         left: { xs: open ? 0 : -250, md: 0 },
         zIndex: 1000,
         transition: "left 0.3s ease-in-out",
-        boxShadow: { xs: open ? "4px 0px 10px rgba(0,0,0,0.5)" : "none", md: "none" },
+        boxShadow: {
+          xs: open ? "4px 0px 10px rgba(0,0,0,0.5)" : "none",
+          md: "none",
+        },
       }}
     >
       <Box display="flex" justifyContent="space-between" alignItems="center">

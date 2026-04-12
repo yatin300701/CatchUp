@@ -1,7 +1,14 @@
 "use client";
 
-import { Box, Checkbox, Input, Typography, useTheme } from "@mui/joy";
-import { CloseOutlined } from "@mui/icons-material";
+import {
+  AspectRatio,
+  Box,
+  Checkbox,
+  Input,
+  Typography,
+  useTheme,
+} from "@mui/joy";
+import { CheckBox, CloseOutlined } from "@mui/icons-material";
 import {
   useCreateSubTask,
   useCreateTask,
@@ -318,7 +325,7 @@ export default function TasksList() {
   );
 
   return (
-    <Box>
+    <Box height="100%">
       <Box
         display="flex"
         justifyContent="space-between"
@@ -328,21 +335,9 @@ export default function TasksList() {
         <Typography level="h3">Tasks</Typography>
       </Box>
 
-      <Box display="flex" flexDirection="column" gap={2}>
+      <Box display="flex" flexDirection="column" gap={2} height="100%">
         <AnimatePresence mode="popLayout">
-          {sortedTasks.length > 0 ? (
-            sortedTasks.map(renderTask)
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              key="no-tasks"
-            >
-              <Typography color="neutral" sx={{ textAlign: "center", py: 4 }}>
-                No tasks found.
-              </Typography>
-            </motion.div>
-          )}
+          {sortedTasks.length > 0 && sortedTasks.map(renderTask)}
         </AnimatePresence>
 
         <Typography
@@ -356,6 +351,35 @@ export default function TasksList() {
         >
           + Add Task
         </Typography>
+        {sortedTasks.length == 0 && (
+          <Box
+            bgcolor="primary.500"
+            display="flex"
+            flexDirection="column"
+            color="text.primary"
+            borderRadius="1rem"
+            alignItems="center"
+            gap="0.5rem"
+            py="3rem"
+            px="2rem"
+            margin="5rem auto"
+          >
+            <Box display="flex" alignItems="center" gap="1rem">
+              <Checkbox size="sm" variant="outlined" checked={false} />{" "}
+              <Typography level="body-sm">Task</Typography>
+            </Box>
+            <Box display="flex" alignItems="center" pl="4rem" gap="1rem">
+              <Checkbox size="sm" variant="rounded" checked={true} />{" "}
+              <Typography
+                level="body-sm"
+                sx={{ textDecoration: " line-through" }}
+              >
+                SubTask
+              </Typography>
+            </Box>
+            <Typography level="h4">Start creating task and subtasks</Typography>
+          </Box>
+        )}
       </Box>
     </Box>
   );

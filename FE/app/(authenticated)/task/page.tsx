@@ -7,7 +7,7 @@ const Task: FC = async () => {
   return (
     <>
       <Header></Header>
-      <Box p={2}>
+      <Box p={2} height="100%">
         <TasksList />
       </Box>
     </>
